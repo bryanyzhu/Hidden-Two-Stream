@@ -1,0 +1,7515 @@
+name: "multiframe_unsup_flow"
+layer {
+  name: "data"
+  type: "MultiFrameData"
+  top: "data"
+  top: "label"
+  multi_frame_data_param {
+    source: "./train_rgb_split1.txt"
+    batch_size: 16
+    new_width: 340
+    new_height: 256
+    new_length: 11
+    num_segments: 1
+  }
+  transform_param{
+    crop_size: 224
+    scale: 0.0039216
+    mirror: true
+    fix_crop: true
+    multi_scale: true
+    max_distort: 1
+    scale_ratios: [1,.875,.75]
+    mean_value: 104
+    mean_value: 117
+    mean_value: 123    
+  }
+  include: { phase: TRAIN }
+}
+layer {
+  name: "data"
+  type: "MultiFrameData"
+  top: "data"
+  top: "label"
+  multi_frame_data_param {
+    source: "./val_rgb_split1.txt"
+    batch_size: 16
+    new_width: 340
+    new_height: 256
+    new_length: 11
+    num_segments: 1
+  }
+  transform_param{
+    crop_size: 224
+    scale: 0.0039216
+    mirror: false
+    mean_value: 104
+    mean_value: 117
+    mean_value: 123
+  }
+  include: { phase: TEST }
+}
+####################################################################################
+#----------------slice input data into multiple frames-------------------
+#----------the number of tops depend on the param: new_length-------------------
+####################################################################################
+layer {
+  name: "input_split"
+  type: "Slice"
+  bottom: "data"
+  top: "img0"
+  top: "img1"
+  top: "img2"
+  top: "img3"
+  top: "img4"
+  top: "img5"
+  top: "img6"
+  top: "img7"
+  top: "img8"
+  top: "img9"
+  top: "img10"
+  slice_param{
+    axis: 1
+    slice_point: 3
+    slice_point: 6
+    slice_point: 9
+    slice_point: 12
+    slice_point: 15
+    slice_point: 18
+    slice_point: 21
+    slice_point: 24
+    slice_point: 27
+    slice_point: 30
+  }
+}
+layer {
+  name: "input_concat"
+  type: "Concat"
+  bottom: "img0"
+  bottom: "img1"
+  bottom: "img2"
+  bottom: "img3"
+  bottom: "img4"
+  bottom: "img5"
+  bottom: "img6"
+  bottom: "img7"
+  bottom: "img8"
+  bottom: "img9"
+  bottom: "img10"
+  top: "input"
+  concat_param {
+    axis: 1
+  }
+}
+####################################################################################
+#-------norm images for photometric losses
+####################################################################################
+layer{
+  name: "img0Norm"
+  type: "LRN"
+  bottom: "img0"
+  top: "img0Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img1Norm"
+  type: "LRN"
+  bottom: "img1"
+  top: "img1Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+
+layer{
+  name: "img2Norm"
+  type: "LRN"
+  bottom: "img2"
+  top: "img2Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img3Norm"
+  type: "LRN"
+  bottom: "img3"
+  top: "img3Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img4Norm"
+  type: "LRN"
+  bottom: "img4"
+  top: "img4Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img5Norm"
+  type: "LRN"
+  bottom: "img5"
+  top: "img5Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img6Norm"
+  type: "LRN"
+  bottom: "img6"
+  top: "img6Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img7Norm"
+  type: "LRN"
+  bottom: "img7"
+  top: "img7Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img8Norm"
+  type: "LRN"
+  bottom: "img8"
+  top: "img8Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img9Norm"
+  type: "LRN"
+  bottom: "img9"
+  top: "img9Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+layer{
+  name: "img10Norm"
+  type: "LRN"
+  bottom: "img10"
+  top: "img10Norm"
+  lrn_param{
+    local_size: 9
+    alpha: 1
+    beta: 0.7
+    norm_region: ACROSS_CHANNELS
+  }
+}
+
+####################################################################################
+#-------smoothness masks for flow gradients
+####################################################################################
+
+layer{
+  name: "SmoothnessMask6"
+  type: "DummyData"
+  top: "SmoothnessMask6"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 2
+      dim: 7
+      dim: 7
+    }
+
+    data_filler {
+      type: "flowBorderMask"
+    }
+  }
+}
+
+layer{
+  name: "SmoothnessMask5"
+  type: "DummyData"
+  top: "SmoothnessMask5"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 2
+      dim: 14
+      dim: 14
+    }
+
+    data_filler {
+      type: "flowBorderMask"
+    }
+  }
+}
+
+layer{
+  name: "SmoothnessMask4"
+  type: "DummyData"
+  top: "SmoothnessMask4"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 2
+      dim: 28
+      dim: 28
+    }
+
+    data_filler {
+      type: "flowBorderMask"
+    }
+  }
+}
+
+layer{
+  name: "SmoothnessMask3"
+  type: "DummyData"
+  top: "SmoothnessMask3"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 2
+      dim: 56
+      dim: 56
+    }
+
+    data_filler {
+      type: "flowBorderMask"
+    }
+  }
+}
+
+layer{
+  name: "SmoothnessMask2"
+  type: "DummyData"
+  top: "SmoothnessMask2"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 2
+      dim: 112
+      dim: 112
+    }
+
+    data_filler {
+      type: "flowBorderMask"
+    }
+  }
+}
+
+####################################################################################
+#-------border masks for RGB images
+####################################################################################
+
+layer{
+  name: "BorderMask6"
+  type: "DummyData"
+  top: "BorderMask6"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 30
+      dim: 7
+      dim: 7
+    }
+
+    data_filler {
+      type: "borderMask"
+      border_ratio: 0.1
+    }
+  }
+}
+
+layer{
+  name: "BorderMask5"
+  type: "DummyData"
+  top: "BorderMask5"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 30
+      dim: 14
+      dim: 14
+    }
+
+    data_filler {
+      type: "borderMask"
+      border_ratio: 0.1
+    }
+  }
+}
+
+layer{
+  name: "BorderMask4"
+  type: "DummyData"
+  top: "BorderMask4"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 30
+      dim: 28
+      dim: 28
+    }
+
+    data_filler {
+      type: "borderMask"
+      border_ratio: 0.1
+    }
+  }
+}
+
+layer{
+  name: "BorderMask3"
+  type: "DummyData"
+  top: "BorderMask3"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 30
+      dim: 56
+      dim: 56
+    }
+
+    data_filler {
+      type: "borderMask"
+      border_ratio: 0.1
+    }
+  }
+}
+
+layer{
+  name: "BorderMask2"
+  type: "DummyData"
+  top: "BorderMask2"
+
+  dummy_data_param{
+    shape{
+      dim: 16
+      dim: 30
+      dim: 112
+      dim: 112
+    }
+
+    data_filler {
+      type: "borderMask"
+      border_ratio: 0.1
+    }
+  }
+}
+
+####################################################################################
+#-------flownet small displacemend modified model starts here
+####################################################################################
+
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "input"
+  top: "conv1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU1"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv1_1"
+  type: "Convolution"
+  bottom: "conv1"
+  top: "conv1_1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU1_1"
+  type: "ReLU"
+  bottom: "conv1_1"
+  top: "conv1_1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "conv1_1"
+  top: "conv2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU2"
+  type: "ReLU"
+  bottom: "conv2"
+  top: "conv2"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv2_1"
+  type: "Convolution"
+  bottom: "conv2"
+  top: "conv2_1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU2_1"
+  type: "ReLU"
+  bottom: "conv2_1"
+  top: "conv2_1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+
+layer {
+  name: "conv3"
+  type: "Convolution"
+  bottom: "conv2_1"
+  top: "conv3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU3"
+  type: "ReLU"
+  bottom: "conv3"
+  top: "conv3"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv3_1"
+  type: "Convolution"
+  bottom: "conv3"
+  top: "conv3_1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU3_1"
+  type: "ReLU"
+  bottom: "conv3_1"
+  top: "conv3_1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+
+layer {
+  name: "conv4"
+  type: "Convolution"
+  bottom: "conv3_1"
+  top: "conv4"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU4"
+  type: "ReLU"
+  bottom: "conv4"
+  top: "conv4"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv4_1"
+  type: "Convolution"
+  bottom: "conv4"
+  top: "conv4_1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU4_1"
+  type: "ReLU"
+  bottom: "conv4_1"
+  top: "conv4_1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+
+layer {
+  name: "conv5"
+  type: "Convolution"
+  bottom: "conv4_1"
+  top: "conv5"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU5"
+  type: "ReLU"
+  bottom: "conv5"
+  top: "conv5"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv5_1"
+  type: "Convolution"
+  bottom: "conv5"
+  top: "conv5_1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU5_1"
+  type: "ReLU"
+  bottom: "conv5_1"
+  top: "conv5_1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+
+####################################################################################
+#----------------bottlenect layer, conv6 and conv6_1
+####################################################################################
+
+layer {
+  name: "conv6"
+  type: "Convolution"
+  bottom: "conv5_1"
+  top: "conv6"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 1024
+    pad: 1
+    kernel_size: 3
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU6"
+  type: "ReLU"
+  bottom: "conv6"
+  top: "conv6"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv6_1"
+  type: "Convolution"
+  bottom: "conv6"
+  top: "conv6_1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 1024
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU6_1"
+  type: "ReLU"
+  bottom: "conv6_1"
+  top: "conv6_1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+
+layer {
+  name: "conv_pr6"
+  type: "Convolution"
+  bottom: "conv6_1"
+  top: "predict_flow6"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+
+####################################################################################
+#----------------loss 6 starts here-------------------
+####################################################################################
+
+layer {
+  name: "flow6_split"
+  type: "Slice"
+  bottom: "predict_flow6"
+  top: "predict_flow6_0"
+  top: "predict_flow6_1"
+  top: "predict_flow6_2"
+  top: "predict_flow6_3"
+  top: "predict_flow6_4"
+  top: "predict_flow6_5"
+  top: "predict_flow6_6"
+  top: "predict_flow6_7"
+  top: "predict_flow6_8"
+  top: "predict_flow6_9"
+  slice_param{
+    axis: 1
+    slice_point: 2
+    slice_point: 4
+    slice_point: 6
+    slice_point: 8
+    slice_point: 10
+    slice_point: 12
+    slice_point: 14
+    slice_point: 16
+    slice_point: 18
+  }
+}
+
+# unsupervised loss
+layer {
+  name: "WarpDownsample6_0"
+  type: "Downsample"
+  bottom: "img0Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img0_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_1"
+  type: "Downsample"
+  bottom: "img1Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img1_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_2"
+  type: "Downsample"
+  bottom: "img2Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img2_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_3"
+  type: "Downsample"
+  bottom: "img3Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img3_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_4"
+  type: "Downsample"
+  bottom: "img4Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img4_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_5"
+  type: "Downsample"
+  bottom: "img5Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img5_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_6"
+  type: "Downsample"
+  bottom: "img6Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img6_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_7"
+  type: "Downsample"
+  bottom: "img7Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img7_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_8"
+  type: "Downsample"
+  bottom: "img8Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img8_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_9"
+  type: "Downsample"
+  bottom: "img9Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img9_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample6_10"
+  type: "Downsample"
+  bottom: "img10Norm"
+  bottom: "predict_flow6_0"
+  top: "downsampled_img10_6"
+  propagate_down: false 
+  propagate_down: false 
+}
+
+# warp frame 2 back to frame 1
+layer{
+  name: "FlowScale6_0"
+  type: "Scale"
+  bottom: "predict_flow6_0"
+  top: "FlowScale6_0"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_1"
+  type: "Scale"
+  bottom: "predict_flow6_1"
+  top: "FlowScale6_1"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_2"
+  type: "Scale"
+  bottom: "predict_flow6_2"
+  top: "FlowScale6_2"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_3"
+  type: "Scale"
+  bottom: "predict_flow6_3"
+  top: "FlowScale6_3"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_4"
+  type: "Scale"
+  bottom: "predict_flow6_4"
+  top: "FlowScale6_4"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_5"
+  type: "Scale"
+  bottom: "predict_flow6_5"
+  top: "FlowScale6_5"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_6"
+  type: "Scale"
+  bottom: "predict_flow6_6"
+  top: "FlowScale6_6"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_7"
+  type: "Scale"
+  bottom: "predict_flow6_7"
+  top: "FlowScale6_7"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_8"
+  type: "Scale"
+  bottom: "predict_flow6_8"
+  top: "FlowScale6_8"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale6_9"
+  type: "Scale"
+  bottom: "predict_flow6_9"
+  top: "FlowScale6_9"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 0.625
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+
+layer{
+  name: "Warp6_0"
+  type: "FlowTransformer"
+  bottom: "downsampled_img1_6"
+  bottom: "FlowScale6_0"
+  top: "Warped6_0"
+}
+layer{
+  name: "Warp6_1"
+  type: "FlowTransformer"
+  bottom: "downsampled_img2_6"
+  bottom: "FlowScale6_1"
+  top: "Warped6_1"
+}
+layer{
+  name: "Warp6_2"
+  type: "FlowTransformer"
+  bottom: "downsampled_img3_6"
+  bottom: "FlowScale6_2"
+  top: "Warped6_2"
+}
+layer{
+  name: "Warp6_3"
+  type: "FlowTransformer"
+  bottom: "downsampled_img4_6"
+  bottom: "FlowScale6_3"
+  top: "Warped6_3"
+}
+layer{
+  name: "Warp6_4"
+  type: "FlowTransformer"
+  bottom: "downsampled_img5_6"
+  bottom: "FlowScale6_4"
+  top: "Warped6_4"
+}
+layer{
+  name: "Warp6_5"
+  type: "FlowTransformer"
+  bottom: "downsampled_img6_6"
+  bottom: "FlowScale6_5"
+  top: "Warped6_5"
+}
+layer{
+  name: "Warp6_6"
+  type: "FlowTransformer"
+  bottom: "downsampled_img7_6"
+  bottom: "FlowScale6_6"
+  top: "Warped6_6"
+}
+layer{
+  name: "Warp6_7"
+  type: "FlowTransformer"
+  bottom: "downsampled_img8_6"
+  bottom: "FlowScale6_7"
+  top: "Warped6_7"
+}
+layer{
+  name: "Warp6_8"
+  type: "FlowTransformer"
+  bottom: "downsampled_img9_6"
+  bottom: "FlowScale6_8"
+  top: "Warped6_8"
+}
+layer{
+  name: "Warp6_9"
+  type: "FlowTransformer"
+  bottom: "downsampled_img10_6"
+  bottom: "FlowScale6_9"
+  top: "Warped6_9"
+}
+
+layer {
+  name: "downsampled6_input_concat"
+  type: "Concat"
+  bottom: "downsampled_img0_6"
+  bottom: "downsampled_img1_6"
+  bottom: "downsampled_img2_6"
+  bottom: "downsampled_img3_6"
+  bottom: "downsampled_img4_6"
+  bottom: "downsampled_img5_6"
+  bottom: "downsampled_img6_6"
+  bottom: "downsampled_img7_6"
+  bottom: "downsampled_img8_6"
+  bottom: "downsampled_img9_6"
+  top: "downsampled6_input_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "warped6_concat"
+  type: "Concat"
+  bottom: "Warped6_0"
+  bottom: "Warped6_1"
+  bottom: "Warped6_2"
+  bottom: "Warped6_3"
+  bottom: "Warped6_4"
+  bottom: "Warped6_5"
+  bottom: "Warped6_6"
+  bottom: "Warped6_7"
+  bottom: "Warped6_8"
+  bottom: "Warped6_9"
+  top: "warped6_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "PhotoDifference6"
+  type: "Eltwise"
+  bottom: "downsampled6_input_concat"
+  bottom: "warped6_concat"
+  top: "PhotoDifference6"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }
+}
+
+layer{
+  name: "PhotometricLoss6"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference6"
+  bottom: "BorderMask6"
+  top: "PhotometricLoss6"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TRAIN
+  }
+}
+layer{
+  name: "PhotometricLoss6"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference6"
+  bottom: "BorderMask6"
+  top: "PhotometricLoss6"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TEST
+  }
+}
+
+# SSIM loss
+layer {
+  name: "SSIMLoss6"
+  type: "SSIMLoss"
+  bottom: "warped6_concat"
+  bottom: "downsampled6_input_concat"
+  top: "SSIMLoss6"
+  loss_weight: 0.16             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer {
+  name: "SSIMLoss6"
+  type: "SSIMLoss"
+  bottom: "warped6_concat"
+  bottom: "downsampled6_input_concat"
+  top: "SSIMLoss6"
+  loss_weight: 0.16             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TEST
+  }
+}
+
+# smoothness loss based on flow gradients
+layer {
+  name: "FlowSplit6_0"
+  type: "Slice"
+  bottom: "predict_flow6_0"
+  top: "U6_0"
+  top: "V6_0"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_0"
+  type: "Convolution"
+  bottom: "U6_0"
+  bottom: "V6_0"
+  top: "FlowDeltasU6_0"
+  top: "FlowDeltasV6_0"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_1"
+  type: "Slice"
+  bottom: "predict_flow6_1"
+  top: "U6_1"
+  top: "V6_1"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_1"
+  type: "Convolution"
+  bottom: "U6_1"
+  bottom: "V6_1"
+  top: "FlowDeltasU6_1"
+  top: "FlowDeltasV6_1"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_2"
+  type: "Slice"
+  bottom: "predict_flow6_2"
+  top: "U6_2"
+  top: "V6_2"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_2"
+  type: "Convolution"
+  bottom: "U6_2"
+  bottom: "V6_2"
+  top: "FlowDeltasU6_2"
+  top: "FlowDeltasV6_2"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "FlowSplit6_3"
+  type: "Slice"
+  bottom: "predict_flow6_3"
+  top: "U6_3"
+  top: "V6_3"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_3"
+  type: "Convolution"
+  bottom: "U6_3"
+  bottom: "V6_3"
+  top: "FlowDeltasU6_3"
+  top: "FlowDeltasV6_3"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_4"
+  type: "Slice"
+  bottom: "predict_flow6_4"
+  top: "U6_4"
+  top: "V6_4"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_4"
+  type: "Convolution"
+  bottom: "U6_4"
+  bottom: "V6_4"
+  top: "FlowDeltasU6_4"
+  top: "FlowDeltasV6_4"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_5"
+  type: "Slice"
+  bottom: "predict_flow6_5"
+  top: "U6_5"
+  top: "V6_5"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_5"
+  type: "Convolution"
+  bottom: "U6_5"
+  bottom: "V6_5"
+  top: "FlowDeltasU6_5"
+  top: "FlowDeltasV6_5"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_6"
+  type: "Slice"
+  bottom: "predict_flow6_6"
+  top: "U6_6"
+  top: "V6_6"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_6"
+  type: "Convolution"
+  bottom: "U6_6"
+  bottom: "V6_6"
+  top: "FlowDeltasU6_6"
+  top: "FlowDeltasV6_6"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_7"
+  type: "Slice"
+  bottom: "predict_flow6_7"
+  top: "U6_7"
+  top: "V6_7"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_7"
+  type: "Convolution"
+  bottom: "U6_7"
+  bottom: "V6_7"
+  top: "FlowDeltasU6_7"
+  top: "FlowDeltasV6_7"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_8"
+  type: "Slice"
+  bottom: "predict_flow6_8"
+  top: "U6_8"
+  top: "V6_8"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_8"
+  type: "Convolution"
+  bottom: "U6_8"
+  bottom: "V6_8"
+  top: "FlowDeltasU6_8"
+  top: "FlowDeltasV6_8"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit6_9"
+  type: "Slice"
+  bottom: "predict_flow6_9"
+  top: "U6_9"
+  top: "V6_9"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas6_9"
+  type: "Convolution"
+  bottom: "U6_9"
+  bottom: "V6_9"
+  top: "FlowDeltasU6_9"
+  top: "FlowDeltasV6_9"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean6_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_0"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_0"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_1"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_1"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_2"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_2"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_3"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_3"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_4"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_4"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_5"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_5"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_6"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_6"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_7"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_7"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_8"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_8"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean6_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasU6_9"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasUClean6_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean6_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasV6_9"
+  bottom: "SmoothnessMask6"
+  top: "FlowDeltasVClean6_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean6"
+  type: "Concat"
+  bottom: "FlowDeltasUClean6_0"
+  bottom: "FlowDeltasUClean6_1"
+  bottom: "FlowDeltasUClean6_2"
+  bottom: "FlowDeltasUClean6_3"
+  bottom: "FlowDeltasUClean6_4"
+  bottom: "FlowDeltasUClean6_5"
+  bottom: "FlowDeltasUClean6_6"
+  bottom: "FlowDeltasUClean6_7"
+  bottom: "FlowDeltasUClean6_8"
+  bottom: "FlowDeltasUClean6_9"
+  top: "FlowDeltasUClean6"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "FlowDeltasVClean6"
+  type: "Concat"
+  bottom: "FlowDeltasVClean6_0"
+  bottom: "FlowDeltasVClean6_1"
+  bottom: "FlowDeltasVClean6_2"
+  bottom: "FlowDeltasVClean6_3"
+  bottom: "FlowDeltasVClean6_4"
+  bottom: "FlowDeltasVClean6_5"
+  bottom: "FlowDeltasVClean6_6"
+  bottom: "FlowDeltasVClean6_7"
+  bottom: "FlowDeltasVClean6_8"
+  bottom: "FlowDeltasVClean6_9"
+  top: "FlowDeltasVClean6"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer{
+  name: "SmoothnessLossU6"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean6"
+  bottom: "BorderMask6"
+  top: "SmoothnessLossU6"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 0.625
+  }
+  include{
+    phase: TRAIN
+  }
+}
+layer{
+  name: "SmoothnessLossV6"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean6"
+  bottom: "BorderMask6"
+  top: "SmoothnessLossV6"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 0.625
+  }
+  include{
+    phase: TRAIN
+  }
+}
+layer{
+  name: "SmoothnessLossU6"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean6"
+  bottom: "BorderMask6"
+  top: "SmoothnessLossU6"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 0.625
+  }
+  include{
+    phase: TEST
+  }
+}
+layer{
+  name: "SmoothnessLossV6"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean6"
+  bottom: "BorderMask6"
+  top: "SmoothnessLossV6"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 0.625
+  }
+  include{
+    phase: TEST
+  }
+}
+####################################################################################
+#----------------loss 6 ends here-------------------
+####################################################################################
+
+layer {
+  name: "deconv5"
+  type: "Deconvolution"
+  bottom: "conv6_1"
+  top: "deconv5"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU_up5"
+  type: "ReLU"
+  bottom: "deconv5"
+  top: "deconv5"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "upsample_flow6to5"
+  type: "Deconvolution"
+  bottom: "predict_flow6"
+  top: "upsampled_flow6_to_5"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "concat_5"
+  type: "Concat"
+  bottom: "conv5_1"
+  bottom: "deconv5"
+  bottom: "upsampled_flow6_to_5"
+  top: "concat5"
+}
+layer {
+  name: "smooth_conv5"
+  type: "Convolution"
+  bottom: "concat5"
+  top: "smooth_conv5"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "conv_pr5"
+  type: "Convolution"
+  bottom: "smooth_conv5"
+  top: "predict_flow5"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+####################################################################################
+#----------------loss 5 starts here-------------------
+####################################################################################
+layer {
+  name: "flow5_split"
+  type: "Slice"
+  bottom: "predict_flow5"
+  top: "predict_flow5_0"
+  top: "predict_flow5_1"
+  top: "predict_flow5_2"
+  top: "predict_flow5_3"
+  top: "predict_flow5_4"
+  top: "predict_flow5_5"
+  top: "predict_flow5_6"
+  top: "predict_flow5_7"
+  top: "predict_flow5_8"
+  top: "predict_flow5_9"
+  slice_param{
+    axis: 1
+    slice_point: 2
+    slice_point: 4
+    slice_point: 6
+    slice_point: 8
+    slice_point: 10
+    slice_point: 12
+    slice_point: 14
+    slice_point: 16
+    slice_point: 18
+  }
+}
+
+# unsupervised loss
+layer {
+  name: "WarpDownsample5_0"
+  type: "Downsample"
+  bottom: "img0Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img0_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_1"
+  type: "Downsample"
+  bottom: "img1Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img1_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_2"
+  type: "Downsample"
+  bottom: "img2Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img2_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_3"
+  type: "Downsample"
+  bottom: "img3Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img3_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_4"
+  type: "Downsample"
+  bottom: "img4Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img4_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_5"
+  type: "Downsample"
+  bottom: "img5Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img5_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_6"
+  type: "Downsample"
+  bottom: "img6Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img6_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_7"
+  type: "Downsample"
+  bottom: "img7Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img7_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_8"
+  type: "Downsample"
+  bottom: "img8Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img8_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_9"
+  type: "Downsample"
+  bottom: "img9Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img9_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample5_10"
+  type: "Downsample"
+  bottom: "img10Norm"
+  bottom: "predict_flow5_0"
+  top: "downsampled_img10_5"
+  propagate_down: false 
+  propagate_down: false 
+}
+
+# warp frame 2 back to frame 1
+layer{
+  name: "FlowScale5_0"
+  type: "Scale"
+  bottom: "predict_flow5_0"
+  top: "FlowScale5_0"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_1"
+  type: "Scale"
+  bottom: "predict_flow5_1"
+  top: "FlowScale5_1"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_2"
+  type: "Scale"
+  bottom: "predict_flow5_2"
+  top: "FlowScale5_2"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_3"
+  type: "Scale"
+  bottom: "predict_flow5_3"
+  top: "FlowScale5_3"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_4"
+  type: "Scale"
+  bottom: "predict_flow5_4"
+  top: "FlowScale5_4"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_5"
+  type: "Scale"
+  bottom: "predict_flow5_5"
+  top: "FlowScale5_5"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_6"
+  type: "Scale"
+  bottom: "predict_flow5_6"
+  top: "FlowScale5_6"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_7"
+  type: "Scale"
+  bottom: "predict_flow5_7"
+  top: "FlowScale5_7"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_8"
+  type: "Scale"
+  bottom: "predict_flow5_8"
+  top: "FlowScale5_8"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale5_9"
+  type: "Scale"
+  bottom: "predict_flow5_9"
+  top: "FlowScale5_9"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 1.25
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+
+layer{
+  name: "Warp5_0"
+  type: "FlowTransformer"
+  bottom: "downsampled_img1_5"
+  bottom: "FlowScale5_0"
+  top: "Warped5_0"
+}
+layer{
+  name: "Warp5_1"
+  type: "FlowTransformer"
+  bottom: "downsampled_img2_5"
+  bottom: "FlowScale5_1"
+  top: "Warped5_1"
+}
+layer{
+  name: "Warp5_2"
+  type: "FlowTransformer"
+  bottom: "downsampled_img3_5"
+  bottom: "FlowScale5_2"
+  top: "Warped5_2"
+}
+layer{
+  name: "Warp5_3"
+  type: "FlowTransformer"
+  bottom: "downsampled_img4_5"
+  bottom: "FlowScale5_3"
+  top: "Warped5_3"
+}
+layer{
+  name: "Warp5_4"
+  type: "FlowTransformer"
+  bottom: "downsampled_img5_5"
+  bottom: "FlowScale5_4"
+  top: "Warped5_4"
+}
+layer{
+  name: "Warp5_5"
+  type: "FlowTransformer"
+  bottom: "downsampled_img6_5"
+  bottom: "FlowScale5_5"
+  top: "Warped5_5"
+}
+layer{
+  name: "Warp5_6"
+  type: "FlowTransformer"
+  bottom: "downsampled_img7_5"
+  bottom: "FlowScale5_6"
+  top: "Warped5_6"
+}
+layer{
+  name: "Warp5_7"
+  type: "FlowTransformer"
+  bottom: "downsampled_img8_5"
+  bottom: "FlowScale5_7"
+  top: "Warped5_7"
+}
+layer{
+  name: "Warp5_8"
+  type: "FlowTransformer"
+  bottom: "downsampled_img9_5"
+  bottom: "FlowScale5_8"
+  top: "Warped5_8"
+}
+layer{
+  name: "Warp5_9"
+  type: "FlowTransformer"
+  bottom: "downsampled_img10_5"
+  bottom: "FlowScale5_9"
+  top: "Warped5_9"
+}
+
+layer {
+  name: "downsampled5_input_concat"
+  type: "Concat"
+  bottom: "downsampled_img0_5"
+  bottom: "downsampled_img1_5"
+  bottom: "downsampled_img2_5"
+  bottom: "downsampled_img3_5"
+  bottom: "downsampled_img4_5"
+  bottom: "downsampled_img5_5"
+  bottom: "downsampled_img6_5"
+  bottom: "downsampled_img7_5"
+  bottom: "downsampled_img8_5"
+  bottom: "downsampled_img9_5"
+  top: "downsampled5_input_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "warped5_concat"
+  type: "Concat"
+  bottom: "Warped5_0"
+  bottom: "Warped5_1"
+  bottom: "Warped5_2"
+  bottom: "Warped5_3"
+  bottom: "Warped5_4"
+  bottom: "Warped5_5"
+  bottom: "Warped5_6"
+  bottom: "Warped5_7"
+  bottom: "Warped5_8"
+  bottom: "Warped5_9"
+  top: "warped5_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "PhotoDifference5"
+  type: "Eltwise"
+  bottom: "downsampled5_input_concat"
+  bottom: "warped5_concat"
+  top: "PhotoDifference5"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }
+}
+
+layer{
+  name: "PhotometricLoss5"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference5"
+  bottom: "BorderMask5"
+  top: "PhotometricLoss5"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "PhotometricLoss5"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference5"
+  bottom: "BorderMask5"
+  top: "PhotometricLoss5"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer {
+  name: "SSIMLoss5"
+  type: "SSIMLoss"
+  bottom: "warped5_concat"
+  bottom: "downsampled5_input_concat"
+  top: "SSIMLoss5"
+  loss_weight: 0.08             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer {
+  name: "SSIMLoss5"
+  type: "SSIMLoss"
+  bottom: "warped5_concat"
+  bottom: "downsampled5_input_concat"
+  top: "SSIMLoss5"
+  loss_weight: 0.08             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TEST
+  }
+}
+
+# smoothness loss based on flow gradients
+layer {
+  name: "FlowSplit5_0"
+  type: "Slice"
+  bottom: "predict_flow5_0"
+  top: "U5_0"
+  top: "V5_0"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_0"
+  type: "Convolution"
+  bottom: "U5_0"
+  bottom: "V5_0"
+  top: "FlowDeltasU5_0"
+  top: "FlowDeltasV5_0"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_1"
+  type: "Slice"
+  bottom: "predict_flow5_1"
+  top: "U5_1"
+  top: "V5_1"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_1"
+  type: "Convolution"
+  bottom: "U5_1"
+  bottom: "V5_1"
+  top: "FlowDeltasU5_1"
+  top: "FlowDeltasV5_1"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_2"
+  type: "Slice"
+  bottom: "predict_flow5_2"
+  top: "U5_2"
+  top: "V5_2"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_2"
+  type: "Convolution"
+  bottom: "U5_2"
+  bottom: "V5_2"
+  top: "FlowDeltasU5_2"
+  top: "FlowDeltasV5_2"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "FlowSplit5_3"
+  type: "Slice"
+  bottom: "predict_flow5_3"
+  top: "U5_3"
+  top: "V5_3"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_3"
+  type: "Convolution"
+  bottom: "U5_3"
+  bottom: "V5_3"
+  top: "FlowDeltasU5_3"
+  top: "FlowDeltasV5_3"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_4"
+  type: "Slice"
+  bottom: "predict_flow5_4"
+  top: "U5_4"
+  top: "V5_4"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_4"
+  type: "Convolution"
+  bottom: "U5_4"
+  bottom: "V5_4"
+  top: "FlowDeltasU5_4"
+  top: "FlowDeltasV5_4"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_5"
+  type: "Slice"
+  bottom: "predict_flow5_5"
+  top: "U5_5"
+  top: "V5_5"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_5"
+  type: "Convolution"
+  bottom: "U5_5"
+  bottom: "V5_5"
+  top: "FlowDeltasU5_5"
+  top: "FlowDeltasV5_5"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_6"
+  type: "Slice"
+  bottom: "predict_flow5_6"
+  top: "U5_6"
+  top: "V5_6"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_6"
+  type: "Convolution"
+  bottom: "U5_6"
+  bottom: "V5_6"
+  top: "FlowDeltasU5_6"
+  top: "FlowDeltasV5_6"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_7"
+  type: "Slice"
+  bottom: "predict_flow5_7"
+  top: "U5_7"
+  top: "V5_7"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_7"
+  type: "Convolution"
+  bottom: "U5_7"
+  bottom: "V5_7"
+  top: "FlowDeltasU5_7"
+  top: "FlowDeltasV5_7"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_8"
+  type: "Slice"
+  bottom: "predict_flow5_8"
+  top: "U5_8"
+  top: "V5_8"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_8"
+  type: "Convolution"
+  bottom: "U5_8"
+  bottom: "V5_8"
+  top: "FlowDeltasU5_8"
+  top: "FlowDeltasV5_8"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit5_9"
+  type: "Slice"
+  bottom: "predict_flow5_9"
+  top: "U5_9"
+  top: "V5_9"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas5_9"
+  type: "Convolution"
+  bottom: "U5_9"
+  bottom: "V5_9"
+  top: "FlowDeltasU5_9"
+  top: "FlowDeltasV5_9"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean5_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_0"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_0"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_1"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_1"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_2"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_2"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_3"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_3"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_4"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_4"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_5"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_5"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_6"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_6"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_7"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_7"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_8"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_8"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean5_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasU5_9"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasUClean5_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean5_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasV5_9"
+  bottom: "SmoothnessMask5"
+  top: "FlowDeltasVClean5_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean5"
+  type: "Concat"
+  bottom: "FlowDeltasUClean5_0"
+  bottom: "FlowDeltasUClean5_1"
+  bottom: "FlowDeltasUClean5_2"
+  bottom: "FlowDeltasUClean5_3"
+  bottom: "FlowDeltasUClean5_4"
+  bottom: "FlowDeltasUClean5_5"
+  bottom: "FlowDeltasUClean5_6"
+  bottom: "FlowDeltasUClean5_7"
+  bottom: "FlowDeltasUClean5_8"
+  bottom: "FlowDeltasUClean5_9"
+  top: "FlowDeltasUClean5"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "FlowDeltasVClean5"
+  type: "Concat"
+  bottom: "FlowDeltasVClean5_0"
+  bottom: "FlowDeltasVClean5_1"
+  bottom: "FlowDeltasVClean5_2"
+  bottom: "FlowDeltasVClean5_3"
+  bottom: "FlowDeltasVClean5_4"
+  bottom: "FlowDeltasVClean5_5"
+  bottom: "FlowDeltasVClean5_6"
+  bottom: "FlowDeltasVClean5_7"
+  bottom: "FlowDeltasVClean5_8"
+  bottom: "FlowDeltasVClean5_9"
+  top: "FlowDeltasVClean5"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer{
+  name: "SmoothnessLossU5"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean5"
+  bottom: "BorderMask5"
+  top: "SmoothnessLossU5"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 1.25
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossV5"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean5"
+  bottom: "BorderMask5"
+  top: "SmoothnessLossV5"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 1.25
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossU5"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean5"
+  bottom: "BorderMask5"
+  top: "SmoothnessLossU5"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 1.25
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer{
+  name: "SmoothnessLossV5"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean5"
+  bottom: "BorderMask5"
+  top: "SmoothnessLossV5"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 1.25
+  }
+  include{
+    phase: TEST
+  }
+}
+
+####################################################################################
+#----------------loss 5 ends here-------------------
+####################################################################################
+
+layer {
+  name: "deconv4"
+  type: "Deconvolution"
+  bottom: "smooth_conv5"
+  top: "deconv4"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU_up4"
+  type: "ReLU"
+  bottom: "deconv4"
+  top: "deconv4"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "upsample_flow5to4"
+  type: "Deconvolution"
+  bottom: "predict_flow5"
+  top: "upsampled_flow5_to_4"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "concat_4"
+  type: "Concat"
+  bottom: "conv4_1"
+  bottom: "deconv4"
+  bottom: "upsampled_flow5_to_4"
+  top: "concat4"
+}
+layer {
+  name: "smooth_conv4"
+  type: "Convolution"
+  bottom: "concat4"
+  top: "smooth_conv4"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "conv_pr4"
+  type: "Convolution"
+  bottom: "smooth_conv4"
+  top: "predict_flow4"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+
+####################################################################################
+#----------------loss 4 starts here-------------------
+####################################################################################
+
+layer {
+  name: "flow4_split"
+  type: "Slice"
+  bottom: "predict_flow4"
+  top: "predict_flow4_0"
+  top: "predict_flow4_1"
+  top: "predict_flow4_2"
+  top: "predict_flow4_3"
+  top: "predict_flow4_4"
+  top: "predict_flow4_5"
+  top: "predict_flow4_6"
+  top: "predict_flow4_7"
+  top: "predict_flow4_8"
+  top: "predict_flow4_9"
+  slice_param{
+    axis: 1
+    slice_point: 2
+    slice_point: 4
+    slice_point: 6
+    slice_point: 8
+    slice_point: 10
+    slice_point: 12
+    slice_point: 14
+    slice_point: 16
+    slice_point: 18
+  }
+}
+
+# unsupervised loss
+layer {
+  name: "WarpDownsample4_0"
+  type: "Downsample"
+  bottom: "img0Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img0_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_1"
+  type: "Downsample"
+  bottom: "img1Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img1_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_2"
+  type: "Downsample"
+  bottom: "img2Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img2_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_3"
+  type: "Downsample"
+  bottom: "img3Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img3_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_4"
+  type: "Downsample"
+  bottom: "img4Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img4_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_5"
+  type: "Downsample"
+  bottom: "img5Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img5_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_6"
+  type: "Downsample"
+  bottom: "img6Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img6_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_7"
+  type: "Downsample"
+  bottom: "img7Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img7_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_8"
+  type: "Downsample"
+  bottom: "img8Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img8_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_9"
+  type: "Downsample"
+  bottom: "img9Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img9_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample4_10"
+  type: "Downsample"
+  bottom: "img10Norm"
+  bottom: "predict_flow4_0"
+  top: "downsampled_img10_4"
+  propagate_down: false 
+  propagate_down: false 
+}
+
+# warp frame 2 back to frame 1
+layer{
+  name: "FlowScale4_0"
+  type: "Scale"
+  bottom: "predict_flow4_0"
+  top: "FlowScale4_0"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_1"
+  type: "Scale"
+  bottom: "predict_flow4_1"
+  top: "FlowScale4_1"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_2"
+  type: "Scale"
+  bottom: "predict_flow4_2"
+  top: "FlowScale4_2"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_3"
+  type: "Scale"
+  bottom: "predict_flow4_3"
+  top: "FlowScale4_3"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_4"
+  type: "Scale"
+  bottom: "predict_flow4_4"
+  top: "FlowScale4_4"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_5"
+  type: "Scale"
+  bottom: "predict_flow4_5"
+  top: "FlowScale4_5"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_6"
+  type: "Scale"
+  bottom: "predict_flow4_6"
+  top: "FlowScale4_6"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_7"
+  type: "Scale"
+  bottom: "predict_flow4_7"
+  top: "FlowScale4_7"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_8"
+  type: "Scale"
+  bottom: "predict_flow4_8"
+  top: "FlowScale4_8"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale4_9"
+  type: "Scale"
+  bottom: "predict_flow4_9"
+  top: "FlowScale4_9"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 2.5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+
+layer{
+  name: "Warp4_0"
+  type: "FlowTransformer"
+  bottom: "downsampled_img1_4"
+  bottom: "FlowScale4_0"
+  top: "Warped4_0"
+}
+layer{
+  name: "Warp4_1"
+  type: "FlowTransformer"
+  bottom: "downsampled_img2_4"
+  bottom: "FlowScale4_1"
+  top: "Warped4_1"
+}
+layer{
+  name: "Warp4_2"
+  type: "FlowTransformer"
+  bottom: "downsampled_img3_4"
+  bottom: "FlowScale4_2"
+  top: "Warped4_2"
+}
+layer{
+  name: "Warp4_3"
+  type: "FlowTransformer"
+  bottom: "downsampled_img4_4"
+  bottom: "FlowScale4_3"
+  top: "Warped4_3"
+}
+layer{
+  name: "Warp4_4"
+  type: "FlowTransformer"
+  bottom: "downsampled_img5_4"
+  bottom: "FlowScale4_4"
+  top: "Warped4_4"
+}
+layer{
+  name: "Warp4_5"
+  type: "FlowTransformer"
+  bottom: "downsampled_img6_4"
+  bottom: "FlowScale4_5"
+  top: "Warped4_5"
+}
+layer{
+  name: "Warp4_6"
+  type: "FlowTransformer"
+  bottom: "downsampled_img7_4"
+  bottom: "FlowScale4_6"
+  top: "Warped4_6"
+}
+layer{
+  name: "Warp4_7"
+  type: "FlowTransformer"
+  bottom: "downsampled_img8_4"
+  bottom: "FlowScale4_7"
+  top: "Warped4_7"
+}
+layer{
+  name: "Warp4_8"
+  type: "FlowTransformer"
+  bottom: "downsampled_img9_4"
+  bottom: "FlowScale4_8"
+  top: "Warped4_8"
+}
+layer{
+  name: "Warp4_9"
+  type: "FlowTransformer"
+  bottom: "downsampled_img10_4"
+  bottom: "FlowScale4_9"
+  top: "Warped4_9"
+}
+
+layer {
+  name: "downsampled4_input_concat"
+  type: "Concat"
+  bottom: "downsampled_img0_4"
+  bottom: "downsampled_img1_4"
+  bottom: "downsampled_img2_4"
+  bottom: "downsampled_img3_4"
+  bottom: "downsampled_img4_4"
+  bottom: "downsampled_img5_4"
+  bottom: "downsampled_img6_4"
+  bottom: "downsampled_img7_4"
+  bottom: "downsampled_img8_4"
+  bottom: "downsampled_img9_4"
+  top: "downsampled4_input_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "warped4_concat"
+  type: "Concat"
+  bottom: "Warped4_0"
+  bottom: "Warped4_1"
+  bottom: "Warped4_2"
+  bottom: "Warped4_3"
+  bottom: "Warped4_4"
+  bottom: "Warped4_5"
+  bottom: "Warped4_6"
+  bottom: "Warped4_7"
+  bottom: "Warped4_8"
+  bottom: "Warped4_9"
+  top: "warped4_concat"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer {
+  name: "PhotoDifference4"
+  type: "Eltwise"
+  bottom: "downsampled4_input_concat"
+  bottom: "warped4_concat"
+  top: "PhotoDifference4"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }
+}
+
+layer{
+  name: "PhotometricLoss4"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference4"
+  bottom: "BorderMask4"
+  top: "PhotometricLoss4"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "PhotometricLoss4"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference4"
+  bottom: "BorderMask4"
+  top: "PhotometricLoss4"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer {
+  name: "SSIMLoss4"
+  type: "SSIMLoss"
+  bottom: "warped4_concat"
+  bottom: "downsampled4_input_concat"
+  top: "SSIMLoss4"
+  loss_weight: 0.04             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer {
+  name: "SSIMLoss4"
+  type: "SSIMLoss"
+  bottom: "warped4_concat"
+  bottom: "downsampled4_input_concat"
+  top: "SSIMLoss4"
+  loss_weight: 0.04             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TEST
+  }
+}
+
+# smoothness loss based on flow gradients
+layer {
+  name: "FlowSplit4_0"
+  type: "Slice"
+  bottom: "predict_flow4_0"
+  top: "U4_0"
+  top: "V4_0"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_0"
+  type: "Convolution"
+  bottom: "U4_0"
+  bottom: "V4_0"
+  top: "FlowDeltasU4_0"
+  top: "FlowDeltasV4_0"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_1"
+  type: "Slice"
+  bottom: "predict_flow4_1"
+  top: "U4_1"
+  top: "V4_1"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_1"
+  type: "Convolution"
+  bottom: "U4_1"
+  bottom: "V4_1"
+  top: "FlowDeltasU4_1"
+  top: "FlowDeltasV4_1"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_2"
+  type: "Slice"
+  bottom: "predict_flow4_2"
+  top: "U4_2"
+  top: "V4_2"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_2"
+  type: "Convolution"
+  bottom: "U4_2"
+  bottom: "V4_2"
+  top: "FlowDeltasU4_2"
+  top: "FlowDeltasV4_2"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "FlowSplit4_3"
+  type: "Slice"
+  bottom: "predict_flow4_3"
+  top: "U4_3"
+  top: "V4_3"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_3"
+  type: "Convolution"
+  bottom: "U4_3"
+  bottom: "V4_3"
+  top: "FlowDeltasU4_3"
+  top: "FlowDeltasV4_3"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_4"
+  type: "Slice"
+  bottom: "predict_flow4_4"
+  top: "U4_4"
+  top: "V4_4"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_4"
+  type: "Convolution"
+  bottom: "U4_4"
+  bottom: "V4_4"
+  top: "FlowDeltasU4_4"
+  top: "FlowDeltasV4_4"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_5"
+  type: "Slice"
+  bottom: "predict_flow4_5"
+  top: "U4_5"
+  top: "V4_5"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_5"
+  type: "Convolution"
+  bottom: "U4_5"
+  bottom: "V4_5"
+  top: "FlowDeltasU4_5"
+  top: "FlowDeltasV4_5"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_6"
+  type: "Slice"
+  bottom: "predict_flow4_6"
+  top: "U4_6"
+  top: "V4_6"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_6"
+  type: "Convolution"
+  bottom: "U4_6"
+  bottom: "V4_6"
+  top: "FlowDeltasU4_6"
+  top: "FlowDeltasV4_6"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_7"
+  type: "Slice"
+  bottom: "predict_flow4_7"
+  top: "U4_7"
+  top: "V4_7"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_7"
+  type: "Convolution"
+  bottom: "U4_7"
+  bottom: "V4_7"
+  top: "FlowDeltasU4_7"
+  top: "FlowDeltasV4_7"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_8"
+  type: "Slice"
+  bottom: "predict_flow4_8"
+  top: "U4_8"
+  top: "V4_8"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_8"
+  type: "Convolution"
+  bottom: "U4_8"
+  bottom: "V4_8"
+  top: "FlowDeltasU4_8"
+  top: "FlowDeltasV4_8"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit4_9"
+  type: "Slice"
+  bottom: "predict_flow4_9"
+  top: "U4_9"
+  top: "V4_9"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas4_9"
+  type: "Convolution"
+  bottom: "U4_9"
+  bottom: "V4_9"
+  top: "FlowDeltasU4_9"
+  top: "FlowDeltasV4_9"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean4_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_0"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_0"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_1"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_1"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_2"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_2"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_3"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_3"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_4"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_4"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_5"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_5"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_6"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_6"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_7"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_7"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_8"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_8"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean4_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasU4_9"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasUClean4_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean4_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasV4_9"
+  bottom: "SmoothnessMask4"
+  top: "FlowDeltasVClean4_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean4"
+  type: "Concat"
+  bottom: "FlowDeltasUClean4_0"
+  bottom: "FlowDeltasUClean4_1"
+  bottom: "FlowDeltasUClean4_2"
+  bottom: "FlowDeltasUClean4_3"
+  bottom: "FlowDeltasUClean4_4"
+  bottom: "FlowDeltasUClean4_5"
+  bottom: "FlowDeltasUClean4_6"
+  bottom: "FlowDeltasUClean4_7"
+  bottom: "FlowDeltasUClean4_8"
+  bottom: "FlowDeltasUClean4_9"
+  top: "FlowDeltasUClean4"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "FlowDeltasVClean4"
+  type: "Concat"
+  bottom: "FlowDeltasVClean4_0"
+  bottom: "FlowDeltasVClean4_1"
+  bottom: "FlowDeltasVClean4_2"
+  bottom: "FlowDeltasVClean4_3"
+  bottom: "FlowDeltasVClean4_4"
+  bottom: "FlowDeltasVClean4_5"
+  bottom: "FlowDeltasVClean4_6"
+  bottom: "FlowDeltasVClean4_7"
+  bottom: "FlowDeltasVClean4_8"
+  bottom: "FlowDeltasVClean4_9"
+  top: "FlowDeltasVClean4"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer{
+  name: "SmoothnessLossU4"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean4"
+  bottom: "BorderMask4"
+  top: "SmoothnessLossU4"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 2.5
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossV4"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean4"
+  bottom: "BorderMask4"
+  top: "SmoothnessLossV4"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 2.5
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossU4"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean4"
+  bottom: "BorderMask4"
+  top: "SmoothnessLossU4"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 2.5
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer{
+  name: "SmoothnessLossV4"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean4"
+  bottom: "BorderMask4"
+  top: "SmoothnessLossV4"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 2.5
+  }
+  include{
+    phase: TEST
+  }
+}
+####################################################################################
+#----------------loss 4 ends here-------------------
+####################################################################################
+layer {
+  name: "deconv3"
+  type: "Deconvolution"
+  bottom: "smooth_conv4"
+  top: "deconv3"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU_up3"
+  type: "ReLU"
+  bottom: "deconv3"
+  top: "deconv3"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "upsample_flow4to3"
+  type: "Deconvolution"
+  bottom: "predict_flow4"
+  top: "upsampled_flow4_to_3"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "concat_3"
+  type: "Concat"
+  bottom: "conv3_1"
+  bottom: "deconv3"
+  bottom: "upsampled_flow4_to_3"
+  top: "concat3"
+}
+layer {
+  name: "smooth_conv3"
+  type: "Convolution"
+  bottom: "concat3"
+  top: "smooth_conv3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "conv_pr3"
+  type: "Convolution"
+  bottom: "smooth_conv3"
+  top: "predict_flow3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+
+####################################################################################
+#----------------loss 3 starts here-------------------
+####################################################################################
+layer {
+  name: "flow3_split"
+  type: "Slice"
+  bottom: "predict_flow3"
+  top: "predict_flow3_0"
+  top: "predict_flow3_1"
+  top: "predict_flow3_2"
+  top: "predict_flow3_3"
+  top: "predict_flow3_4"
+  top: "predict_flow3_5"
+  top: "predict_flow3_6"
+  top: "predict_flow3_7"
+  top: "predict_flow3_8"
+  top: "predict_flow3_9"
+  slice_param{
+    axis: 1
+    slice_point: 2
+    slice_point: 4
+    slice_point: 6
+    slice_point: 8
+    slice_point: 10
+    slice_point: 12
+    slice_point: 14
+    slice_point: 16
+    slice_point: 18
+  }
+}
+
+# unsupervised loss
+layer {
+  name: "WarpDownsample3_0"
+  type: "Downsample"
+  bottom: "img0Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img0_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_1"
+  type: "Downsample"
+  bottom: "img1Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img1_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_2"
+  type: "Downsample"
+  bottom: "img2Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img2_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_3"
+  type: "Downsample"
+  bottom: "img3Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img3_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_4"
+  type: "Downsample"
+  bottom: "img4Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img4_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_5"
+  type: "Downsample"
+  bottom: "img5Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img5_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_6"
+  type: "Downsample"
+  bottom: "img6Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img6_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_7"
+  type: "Downsample"
+  bottom: "img7Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img7_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_8"
+  type: "Downsample"
+  bottom: "img8Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img8_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_9"
+  type: "Downsample"
+  bottom: "img9Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img9_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample3_10"
+  type: "Downsample"
+  bottom: "img10Norm"
+  bottom: "predict_flow3_0"
+  top: "downsampled_img10_3"
+  propagate_down: false 
+  propagate_down: false 
+}
+
+# warp frame 2 back to frame 1
+layer{
+  name: "FlowScale3_0"
+  type: "Scale"
+  bottom: "predict_flow3_0"
+  top: "FlowScale3_0"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_1"
+  type: "Scale"
+  bottom: "predict_flow3_1"
+  top: "FlowScale3_1"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_2"
+  type: "Scale"
+  bottom: "predict_flow3_2"
+  top: "FlowScale3_2"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_3"
+  type: "Scale"
+  bottom: "predict_flow3_3"
+  top: "FlowScale3_3"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_4"
+  type: "Scale"
+  bottom: "predict_flow3_4"
+  top: "FlowScale3_4"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_5"
+  type: "Scale"
+  bottom: "predict_flow3_5"
+  top: "FlowScale3_5"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_6"
+  type: "Scale"
+  bottom: "predict_flow3_6"
+  top: "FlowScale3_6"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_7"
+  type: "Scale"
+  bottom: "predict_flow3_7"
+  top: "FlowScale3_7"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_8"
+  type: "Scale"
+  bottom: "predict_flow3_8"
+  top: "FlowScale3_8"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale3_9"
+  type: "Scale"
+  bottom: "predict_flow3_9"
+  top: "FlowScale3_9"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 5
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+
+layer{
+  name: "Warp3_0"
+  type: "FlowTransformer"
+  bottom: "downsampled_img1_3"
+  bottom: "FlowScale3_0"
+  top: "Warped3_0"
+}
+layer{
+  name: "Warp3_1"
+  type: "FlowTransformer"
+  bottom: "downsampled_img2_3"
+  bottom: "FlowScale3_1"
+  top: "Warped3_1"
+}
+layer{
+  name: "Warp3_2"
+  type: "FlowTransformer"
+  bottom: "downsampled_img3_3"
+  bottom: "FlowScale3_2"
+  top: "Warped3_2"
+}
+layer{
+  name: "Warp3_3"
+  type: "FlowTransformer"
+  bottom: "downsampled_img4_3"
+  bottom: "FlowScale3_3"
+  top: "Warped3_3"
+}
+layer{
+  name: "Warp3_4"
+  type: "FlowTransformer"
+  bottom: "downsampled_img5_3"
+  bottom: "FlowScale3_4"
+  top: "Warped3_4"
+}
+layer{
+  name: "Warp3_5"
+  type: "FlowTransformer"
+  bottom: "downsampled_img6_3"
+  bottom: "FlowScale3_5"
+  top: "Warped3_5"
+}
+layer{
+  name: "Warp3_6"
+  type: "FlowTransformer"
+  bottom: "downsampled_img7_3"
+  bottom: "FlowScale3_6"
+  top: "Warped3_6"
+}
+layer{
+  name: "Warp3_7"
+  type: "FlowTransformer"
+  bottom: "downsampled_img8_3"
+  bottom: "FlowScale3_7"
+  top: "Warped3_7"
+}
+layer{
+  name: "Warp3_8"
+  type: "FlowTransformer"
+  bottom: "downsampled_img9_3"
+  bottom: "FlowScale3_8"
+  top: "Warped3_8"
+}
+layer{
+  name: "Warp3_9"
+  type: "FlowTransformer"
+  bottom: "downsampled_img10_3"
+  bottom: "FlowScale3_9"
+  top: "Warped3_9"
+}
+
+layer {
+  name: "downsampled3_input_concat"
+  type: "Concat"
+  bottom: "downsampled_img0_3"
+  bottom: "downsampled_img1_3"
+  bottom: "downsampled_img2_3"
+  bottom: "downsampled_img3_3"
+  bottom: "downsampled_img4_3"
+  bottom: "downsampled_img5_3"
+  bottom: "downsampled_img6_3"
+  bottom: "downsampled_img7_3"
+  bottom: "downsampled_img8_3"
+  bottom: "downsampled_img9_3"
+  top: "downsampled3_input_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "warped3_concat"
+  type: "Concat"
+  bottom: "Warped3_0"
+  bottom: "Warped3_1"
+  bottom: "Warped3_2"
+  bottom: "Warped3_3"
+  bottom: "Warped3_4"
+  bottom: "Warped3_5"
+  bottom: "Warped3_6"
+  bottom: "Warped3_7"
+  bottom: "Warped3_8"
+  bottom: "Warped3_9"
+  top: "warped3_concat"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer {
+  name: "PhotoDifference3"
+  type: "Eltwise"
+  bottom: "downsampled3_input_concat"
+  bottom: "warped3_concat"
+  top: "PhotoDifference3"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }
+}
+
+layer{
+  name: "PhotometricLoss3"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference3"
+  bottom: "BorderMask3"
+  top: "PhotometricLoss3"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "PhotometricLoss3"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference3"
+  bottom: "BorderMask3"
+  top: "PhotometricLoss3"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer {
+  name: "SSIMLoss3"
+  type: "SSIMLoss"
+  bottom: "warped3_concat"
+  bottom: "downsampled3_input_concat"
+  top: "SSIMLoss3"
+  loss_weight: 0.02             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TRAIN
+  }
+}
+layer {
+  name: "SSIMLoss3"
+  type: "SSIMLoss"
+  bottom: "warped3_concat"
+  bottom: "downsampled3_input_concat"
+  top: "SSIMLoss3"
+  loss_weight: 0.02             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TEST
+  }
+}
+
+# smoothness loss based on flow gradients
+layer {
+  name: "FlowSplit3_0"
+  type: "Slice"
+  bottom: "predict_flow3_0"
+  top: "U3_0"
+  top: "V3_0"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_0"
+  type: "Convolution"
+  bottom: "U3_0"
+  bottom: "V3_0"
+  top: "FlowDeltasU3_0"
+  top: "FlowDeltasV3_0"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_1"
+  type: "Slice"
+  bottom: "predict_flow3_1"
+  top: "U3_1"
+  top: "V3_1"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_1"
+  type: "Convolution"
+  bottom: "U3_1"
+  bottom: "V3_1"
+  top: "FlowDeltasU3_1"
+  top: "FlowDeltasV3_1"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_2"
+  type: "Slice"
+  bottom: "predict_flow3_2"
+  top: "U3_2"
+  top: "V3_2"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_2"
+  type: "Convolution"
+  bottom: "U3_2"
+  bottom: "V3_2"
+  top: "FlowDeltasU3_2"
+  top: "FlowDeltasV3_2"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "FlowSplit3_3"
+  type: "Slice"
+  bottom: "predict_flow3_3"
+  top: "U3_3"
+  top: "V3_3"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_3"
+  type: "Convolution"
+  bottom: "U3_3"
+  bottom: "V3_3"
+  top: "FlowDeltasU3_3"
+  top: "FlowDeltasV3_3"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_4"
+  type: "Slice"
+  bottom: "predict_flow3_4"
+  top: "U3_4"
+  top: "V3_4"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_4"
+  type: "Convolution"
+  bottom: "U3_4"
+  bottom: "V3_4"
+  top: "FlowDeltasU3_4"
+  top: "FlowDeltasV3_4"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_5"
+  type: "Slice"
+  bottom: "predict_flow3_5"
+  top: "U3_5"
+  top: "V3_5"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_5"
+  type: "Convolution"
+  bottom: "U3_5"
+  bottom: "V3_5"
+  top: "FlowDeltasU3_5"
+  top: "FlowDeltasV3_5"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_6"
+  type: "Slice"
+  bottom: "predict_flow3_6"
+  top: "U3_6"
+  top: "V3_6"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_6"
+  type: "Convolution"
+  bottom: "U3_6"
+  bottom: "V3_6"
+  top: "FlowDeltasU3_6"
+  top: "FlowDeltasV3_6"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_7"
+  type: "Slice"
+  bottom: "predict_flow3_7"
+  top: "U3_7"
+  top: "V3_7"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_7"
+  type: "Convolution"
+  bottom: "U3_7"
+  bottom: "V3_7"
+  top: "FlowDeltasU3_7"
+  top: "FlowDeltasV3_7"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_8"
+  type: "Slice"
+  bottom: "predict_flow3_8"
+  top: "U3_8"
+  top: "V3_8"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_8"
+  type: "Convolution"
+  bottom: "U3_8"
+  bottom: "V3_8"
+  top: "FlowDeltasU3_8"
+  top: "FlowDeltasV3_8"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit3_9"
+  type: "Slice"
+  bottom: "predict_flow3_9"
+  top: "U3_9"
+  top: "V3_9"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas3_9"
+  type: "Convolution"
+  bottom: "U3_9"
+  bottom: "V3_9"
+  top: "FlowDeltasU3_9"
+  top: "FlowDeltasV3_9"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean3_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_0"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_0"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_1"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_1"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_2"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_2"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_3"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_3"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_4"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_4"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_5"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_5"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_6"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_6"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_7"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_7"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_8"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_8"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean3_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasU3_9"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasUClean3_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean3_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasV3_9"
+  bottom: "SmoothnessMask3"
+  top: "FlowDeltasVClean3_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean3"
+  type: "Concat"
+  bottom: "FlowDeltasUClean3_0"
+  bottom: "FlowDeltasUClean3_1"
+  bottom: "FlowDeltasUClean3_2"
+  bottom: "FlowDeltasUClean3_3"
+  bottom: "FlowDeltasUClean3_4"
+  bottom: "FlowDeltasUClean3_5"
+  bottom: "FlowDeltasUClean3_6"
+  bottom: "FlowDeltasUClean3_7"
+  bottom: "FlowDeltasUClean3_8"
+  bottom: "FlowDeltasUClean3_9"
+  top: "FlowDeltasUClean3"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "FlowDeltasVClean3"
+  type: "Concat"
+  bottom: "FlowDeltasVClean3_0"
+  bottom: "FlowDeltasVClean3_1"
+  bottom: "FlowDeltasVClean3_2"
+  bottom: "FlowDeltasVClean3_3"
+  bottom: "FlowDeltasVClean3_4"
+  bottom: "FlowDeltasVClean3_5"
+  bottom: "FlowDeltasVClean3_6"
+  bottom: "FlowDeltasVClean3_7"
+  bottom: "FlowDeltasVClean3_8"
+  bottom: "FlowDeltasVClean3_9"
+  top: "FlowDeltasVClean3"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer{
+  name: "SmoothnessLossU3"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean3"
+  bottom: "BorderMask3"
+  top: "SmoothnessLossU3"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 5
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossV3"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean3"
+  bottom: "BorderMask3"
+  top: "SmoothnessLossV3"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 5
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossU3"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean3"
+  bottom: "BorderMask3"
+  top: "SmoothnessLossU3"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 5
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer{
+  name: "SmoothnessLossV3"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean3"
+  bottom: "BorderMask3"
+  top: "SmoothnessLossV3"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 5
+  }
+  include{
+    phase: TEST
+  }
+}
+
+####################################################################################
+#----------------loss 3 ends here-------------------
+####################################################################################
+layer {
+  name: "deconv2"
+  type: "Deconvolution"
+  bottom: "smooth_conv3"
+  top: "deconv2"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "ReLU_up2"
+  type: "ReLU"
+  bottom: "deconv2"
+  top: "deconv2"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "upsample_flow3to2"
+  type: "Deconvolution"
+  bottom: "predict_flow3"
+  top: "upsampled_flow3_to_2"
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "concat_2"
+  type: "Concat"
+  bottom: "conv2_1"
+  bottom: "deconv2"
+  bottom: "upsampled_flow3_to_2"
+  top: "concat2"
+}
+layer {
+  name: "smooth_conv2"
+  type: "Convolution"
+  bottom: "concat2"
+  top: "smooth_conv2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "conv_pr2"
+  type: "Convolution"
+  bottom: "smooth_conv2"
+  top: "predict_flow2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 20
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    engine: CUDNN
+  }
+}
+
+####################################################################################
+#----------------loss 2 starts here-------------------
+####################################################################################
+layer {
+  name: "flow2_split"
+  type: "Slice"
+  bottom: "predict_flow2"
+  top: "predict_flow2_0"
+  top: "predict_flow2_1"
+  top: "predict_flow2_2"
+  top: "predict_flow2_3"
+  top: "predict_flow2_4"
+  top: "predict_flow2_5"
+  top: "predict_flow2_6"
+  top: "predict_flow2_7"
+  top: "predict_flow2_8"
+  top: "predict_flow2_9"
+  slice_param{
+    axis: 1
+    slice_point: 2
+    slice_point: 4
+    slice_point: 6
+    slice_point: 8
+    slice_point: 10
+    slice_point: 12
+    slice_point: 14
+    slice_point: 16
+    slice_point: 18
+  }
+}
+
+# unsupervised loss
+layer {
+  name: "WarpDownsample2_0"
+  type: "Downsample"
+  bottom: "img0Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img0_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_1"
+  type: "Downsample"
+  bottom: "img1Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img1_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_2"
+  type: "Downsample"
+  bottom: "img2Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img2_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_3"
+  type: "Downsample"
+  bottom: "img3Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img3_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_4"
+  type: "Downsample"
+  bottom: "img4Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img4_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_5"
+  type: "Downsample"
+  bottom: "img5Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img5_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_6"
+  type: "Downsample"
+  bottom: "img6Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img6_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_7"
+  type: "Downsample"
+  bottom: "img7Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img7_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_8"
+  type: "Downsample"
+  bottom: "img8Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img8_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_9"
+  type: "Downsample"
+  bottom: "img9Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img9_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+layer {
+  name: "WarpDownsample2_10"
+  type: "Downsample"
+  bottom: "img10Norm"
+  bottom: "predict_flow2_0"
+  top: "downsampled_img10_2"
+  propagate_down: false 
+  propagate_down: false 
+}
+
+# warp frame 2 back to frame 1
+layer{
+  name: "FlowScale2_0"
+  type: "Scale"
+  bottom: "predict_flow2_0"
+  top: "FlowScale2_0"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_1"
+  type: "Scale"
+  bottom: "predict_flow2_1"
+  top: "FlowScale2_1"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_2"
+  type: "Scale"
+  bottom: "predict_flow2_2"
+  top: "FlowScale2_2"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_3"
+  type: "Scale"
+  bottom: "predict_flow2_3"
+  top: "FlowScale2_3"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_4"
+  type: "Scale"
+  bottom: "predict_flow2_4"
+  top: "FlowScale2_4"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_5"
+  type: "Scale"
+  bottom: "predict_flow2_5"
+  top: "FlowScale2_5"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_6"
+  type: "Scale"
+  bottom: "predict_flow2_6"
+  top: "FlowScale2_6"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_7"
+  type: "Scale"
+  bottom: "predict_flow2_7"
+  top: "FlowScale2_7"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_8"
+  type: "Scale"
+  bottom: "predict_flow2_8"
+  top: "FlowScale2_8"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+layer{
+  name: "FlowScale2_9"
+  type: "Scale"
+  bottom: "predict_flow2_9"
+  top: "FlowScale2_9"
+  scale_param {
+    filler {
+      type: "constant"
+      value: 10
+    }
+    bias_term : false
+  }
+  param { 
+    lr_mult: 0 
+  }
+}
+
+layer{
+  name: "Warp2_0"
+  type: "FlowTransformer"
+  bottom: "downsampled_img1_2"
+  bottom: "FlowScale2_0"
+  top: "Warped2_0"
+}
+layer{
+  name: "Warp2_1"
+  type: "FlowTransformer"
+  bottom: "downsampled_img2_2"
+  bottom: "FlowScale2_1"
+  top: "Warped2_1"
+}
+layer{
+  name: "Warp2_2"
+  type: "FlowTransformer"
+  bottom: "downsampled_img3_2"
+  bottom: "FlowScale2_2"
+  top: "Warped2_2"
+}
+layer{
+  name: "Warp2_3"
+  type: "FlowTransformer"
+  bottom: "downsampled_img4_2"
+  bottom: "FlowScale2_3"
+  top: "Warped2_3"
+}
+layer{
+  name: "Warp2_4"
+  type: "FlowTransformer"
+  bottom: "downsampled_img5_2"
+  bottom: "FlowScale2_4"
+  top: "Warped2_4"
+}
+layer{
+  name: "Warp2_5"
+  type: "FlowTransformer"
+  bottom: "downsampled_img6_2"
+  bottom: "FlowScale2_5"
+  top: "Warped2_5"
+}
+layer{
+  name: "Warp2_6"
+  type: "FlowTransformer"
+  bottom: "downsampled_img7_2"
+  bottom: "FlowScale2_6"
+  top: "Warped2_6"
+}
+layer{
+  name: "Warp2_7"
+  type: "FlowTransformer"
+  bottom: "downsampled_img8_2"
+  bottom: "FlowScale2_7"
+  top: "Warped2_7"
+}
+layer{
+  name: "Warp2_8"
+  type: "FlowTransformer"
+  bottom: "downsampled_img9_2"
+  bottom: "FlowScale2_8"
+  top: "Warped2_8"
+}
+layer{
+  name: "Warp2_9"
+  type: "FlowTransformer"
+  bottom: "downsampled_img10_2"
+  bottom: "FlowScale2_9"
+  top: "Warped2_9"
+}
+
+layer {
+  name: "downsampled2_input_concat"
+  type: "Concat"
+  bottom: "downsampled_img0_2"
+  bottom: "downsampled_img1_2"
+  bottom: "downsampled_img2_2"
+  bottom: "downsampled_img3_2"
+  bottom: "downsampled_img4_2"
+  bottom: "downsampled_img5_2"
+  bottom: "downsampled_img6_2"
+  bottom: "downsampled_img7_2"
+  bottom: "downsampled_img8_2"
+  bottom: "downsampled_img9_2"
+  top: "downsampled2_input_concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "warped2_concat"
+  type: "Concat"
+  bottom: "Warped2_0"
+  bottom: "Warped2_1"
+  bottom: "Warped2_2"
+  bottom: "Warped2_3"
+  bottom: "Warped2_4"
+  bottom: "Warped2_5"
+  bottom: "Warped2_6"
+  bottom: "Warped2_7"
+  bottom: "Warped2_8"
+  bottom: "Warped2_9"
+  top: "warped2_concat"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer {
+  name: "PhotoDifference2"
+  type: "Eltwise"
+  bottom: "downsampled2_input_concat"
+  bottom: "warped2_concat"
+  top: "PhotoDifference2"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }
+}
+
+layer{
+  name: "PhotometricLoss2"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference2"
+  bottom: "BorderMask2"
+  top: "PhotometricLoss2"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "PhotometricLoss2"
+  type: "CharbonnierLoss"
+  bottom: "PhotoDifference2"
+  bottom: "BorderMask2"
+  top: "PhotometricLoss2"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.4
+    beta: 255
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer {
+  name: "SSIMLoss2"
+  type: "SSIMLoss"
+  bottom: "warped2_concat"
+  bottom: "downsampled2_input_concat"
+  top: "SSIMLoss2"
+  loss_weight: 0.01             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TRAIN
+  }
+}
+layer {
+  name: "SSIMLoss2"
+  type: "SSIMLoss"
+  bottom: "warped2_concat"
+  bottom: "downsampled2_input_concat"
+  top: "SSIMLoss2"
+  loss_weight: 0.01             # <- set whatever you fancy
+  ssim_loss_param{
+    kernel_size: 8           # <- The kernel size is linked to the gaussian variance (circular). The kernel encloses +/1 3*sigma 
+    stride: 8                # <- Equal strides in both dimensions
+    c1: 0.0001               # <- Let these be
+    c2: 0.001                # <- Let these be
+  }
+  include{
+    phase: TEST
+  }
+}
+
+# smoothness loss based on flow gradients
+layer {
+  name: "FlowSplit2_0"
+  type: "Slice"
+  bottom: "predict_flow2_0"
+  top: "U2_0"
+  top: "V2_0"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_0"
+  type: "Convolution"
+  bottom: "U2_0"
+  bottom: "V2_0"
+  top: "FlowDeltasU2_0"
+  top: "FlowDeltasV2_0"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_1"
+  type: "Slice"
+  bottom: "predict_flow2_1"
+  top: "U2_1"
+  top: "V2_1"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_1"
+  type: "Convolution"
+  bottom: "U2_1"
+  bottom: "V2_1"
+  top: "FlowDeltasU2_1"
+  top: "FlowDeltasV2_1"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_2"
+  type: "Slice"
+  bottom: "predict_flow2_2"
+  top: "U2_2"
+  top: "V2_2"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_2"
+  type: "Convolution"
+  bottom: "U2_2"
+  bottom: "V2_2"
+  top: "FlowDeltasU2_2"
+  top: "FlowDeltasV2_2"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+layer {
+  name: "FlowSplit2_3"
+  type: "Slice"
+  bottom: "predict_flow2_3"
+  top: "U2_3"
+  top: "V2_3"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_3"
+  type: "Convolution"
+  bottom: "U2_3"
+  bottom: "V2_3"
+  top: "FlowDeltasU2_3"
+  top: "FlowDeltasV2_3"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_4"
+  type: "Slice"
+  bottom: "predict_flow2_4"
+  top: "U2_4"
+  top: "V2_4"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_4"
+  type: "Convolution"
+  bottom: "U2_4"
+  bottom: "V2_4"
+  top: "FlowDeltasU2_4"
+  top: "FlowDeltasV2_4"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_5"
+  type: "Slice"
+  bottom: "predict_flow2_5"
+  top: "U2_5"
+  top: "V2_5"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_5"
+  type: "Convolution"
+  bottom: "U2_5"
+  bottom: "V2_5"
+  top: "FlowDeltasU2_5"
+  top: "FlowDeltasV2_5"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_6"
+  type: "Slice"
+  bottom: "predict_flow2_6"
+  top: "U2_6"
+  top: "V2_6"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_6"
+  type: "Convolution"
+  bottom: "U2_6"
+  bottom: "V2_6"
+  top: "FlowDeltasU2_6"
+  top: "FlowDeltasV2_6"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_7"
+  type: "Slice"
+  bottom: "predict_flow2_7"
+  top: "U2_7"
+  top: "V2_7"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_7"
+  type: "Convolution"
+  bottom: "U2_7"
+  bottom: "V2_7"
+  top: "FlowDeltasU2_7"
+  top: "FlowDeltasV2_7"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_8"
+  type: "Slice"
+  bottom: "predict_flow2_8"
+  top: "U2_8"
+  top: "V2_8"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_8"
+  type: "Convolution"
+  bottom: "U2_8"
+  bottom: "V2_8"
+  top: "FlowDeltasU2_8"
+  top: "FlowDeltasV2_8"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowSplit2_9"
+  type: "Slice"
+  bottom: "predict_flow2_9"
+  top: "U2_9"
+  top: "V2_9"
+  slice_param{
+    axis: 1
+    slice_point: 1
+  }
+}
+layer {
+  name: "FlowDeltas2_9"
+  type: "Convolution"
+  bottom: "U2_9"
+  bottom: "V2_9"
+  top: "FlowDeltasU2_9"
+  top: "FlowDeltasV2_9"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "file"
+      file: "./FlowDeltaWeights.txt"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    engine: CUDNN
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean2_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_0"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_0"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_0"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_0"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_1"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_1"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_1"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_1"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_2"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_2"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_2"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_3"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_3"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_3"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_3"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_4"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_4"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_4"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_4"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_5"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_5"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_5"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_5"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_6"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_6"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_6"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_6"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_7"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_7"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_7"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_7"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_8"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_8"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_8"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_8"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasUClean2_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasU2_9"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasUClean2_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "FlowDeltasVClean2_9"
+  type: "Eltwise"
+  bottom: "FlowDeltasV2_9"
+  bottom: "SmoothnessMask2"
+  top: "FlowDeltasVClean2_9"
+  eltwise_param {
+    operation: PROD
+  }
+}
+
+layer {
+  name: "FlowDeltasUClean2"
+  type: "Concat"
+  bottom: "FlowDeltasUClean2_0"
+  bottom: "FlowDeltasUClean2_1"
+  bottom: "FlowDeltasUClean2_2"
+  bottom: "FlowDeltasUClean2_3"
+  bottom: "FlowDeltasUClean2_4"
+  bottom: "FlowDeltasUClean2_5"
+  bottom: "FlowDeltasUClean2_6"
+  bottom: "FlowDeltasUClean2_7"
+  bottom: "FlowDeltasUClean2_8"
+  bottom: "FlowDeltasUClean2_9"
+  top: "FlowDeltasUClean2"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "FlowDeltasVClean2"
+  type: "Concat"
+  bottom: "FlowDeltasVClean2_0"
+  bottom: "FlowDeltasVClean2_1"
+  bottom: "FlowDeltasVClean2_2"
+  bottom: "FlowDeltasVClean2_3"
+  bottom: "FlowDeltasVClean2_4"
+  bottom: "FlowDeltasVClean2_5"
+  bottom: "FlowDeltasVClean2_6"
+  bottom: "FlowDeltasVClean2_7"
+  bottom: "FlowDeltasVClean2_8"
+  bottom: "FlowDeltasVClean2_9"
+  top: "FlowDeltasVClean2"
+  concat_param {
+    axis: 1
+  }
+}
+
+layer{
+  name: "SmoothnessLossU2"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean2"
+  bottom: "BorderMask2"
+  top: "SmoothnessLossU2"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 10
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossV2"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean2"
+  bottom: "BorderMask2"
+  top: "SmoothnessLossV2"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 10
+  }
+  include{
+    phase: TRAIN
+  }
+}
+
+layer{
+  name: "SmoothnessLossU2"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasUClean2"
+  bottom: "BorderMask2"
+  top: "SmoothnessLossU2"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 10
+  }
+  include{
+    phase: TEST
+  }
+}
+
+layer{
+  name: "SmoothnessLossV2"
+  type: "CharbonnierLoss"
+  bottom: "FlowDeltasVClean2"
+  bottom: "BorderMask2"
+  top: "SmoothnessLossV2"
+  loss_weight: 1
+  charbonnier_loss_param {
+    alpha: 0.3
+    beta: 10
+  }
+  include{
+    phase: TEST
+  }
+}
+####################################################################################
+#----------------loss 2 ends here-------------------
+####################################################################################
+
+
+####################################################################################
+#----------------extra stuff-------------------
+####################################################################################
+layer {
+  name: "Silence_label"
+  type: "Silence"
+  bottom: "label"
+}
+

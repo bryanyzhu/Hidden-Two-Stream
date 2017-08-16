@@ -1,0 +1,21 @@
+net: "./train.prototxt"
+base_lr: 3.2e-05
+test_iter: 240
+test_interval: 2000
+lr_policy: "multistep"
+gamma: 0.5
+stepvalue: 100000
+stepvalue: 200000
+stepvalue: 250000
+stepvalue: 300000
+stepvalue: 350000
+momentum: 0.9
+weight_decay: 0.0004
+max_iter: 400000
+snapshot: 2000
+snapshot_prefix: "./logs/ucf101_multiframe_unsupflow"
+solver_mode: GPU  # Some of our layers only support GPU
+type: "Adam"
+momentum2: 0.999
+display: 50
+device_id: 0
