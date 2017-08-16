@@ -73,15 +73,28 @@ Then run
 
 But maybe you need to set paths correctly in `demo_hidden.py` before you run it, like `model_def_file` and `model_file`. And also change the `FRAME_PATH` in `testlist01_with_labels.txt`. 
 
+
+MotionNet
+=========
+
+The training and testing code of MotionNet is in folder
+
+	cd models/multiframe_MotionNet
+
+The pretraied model can be downloaded at [MotionNet](https://drive.google.com/open?id=0B-bJpXHBmFWDVU5DRTY4Ym02TFE).
+
+
 Misc
 ====================
 
-There is a chance that you may get a little bit higher or lower accuracy on UCF101 and HMDB51 than the numbers reported in our paper, even using our provided trained models. This is normal because your extracted video frames may not be the same as ours, and the quality of image has an impact on the final performance. Thus, no need to raise an issue unless the performance gap is large, e.g. larger than 1%. 
+1. There is a chance that you may get a little bit higher or lower accuracy on UCF101 and HMDB51 than the numbers reported in our paper, even using our provided trained models. This is normal because your extracted video frames may not be the same as ours, and the quality of image has an impact on the final performance. Thus, no need to raise an issue unless the performance gap is large, e.g. larger than 1%. 
+
+2. Since there are so many losses to compute, you may encounter model divergence in the very beginning of the training. You can simply reduce learning rate first to get a good initialization, and then back on track. Or you just rerun training several times. 
+
 
 TODO
 ====================
 
-- [ ] Add details and pre-trained models for 2-frame and multi-frame MotionNet
 - [ ] Add other initialization models for the rest splits of UCF101 and HMDB51
 - [ ] Experiment on large-scale action datasets, like Sports-1M and Kinetics 
 
