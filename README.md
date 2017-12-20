@@ -73,7 +73,7 @@ Then run
 
 But maybe you need to set paths correctly in `demo_hidden.py` before you run it, like `model_def_file` and `model_file`. And also change the `FRAME_PATH` in `testlist01_with_labels.txt`. 
 
-After you get both spatial and hidden predictions, the late fusion code is in folder ./test, run `late_fusion.m` to get the final two stream predictions.
+After you get both spatial and hidden predictions, the late fusion code is in folder `./test`, run `late_fusion.m` to get the final two stream predictions.
 
 
 MotionNet
@@ -116,6 +116,7 @@ Related Projects
 ====================
 
 [GuidedNet](https://github.com/bryanyzhu/GuidedNet): Guided Optical Flow Learning
+
 [Two_Stream Pytorch](https://github.com/bryanyzhu/two-stream-pytorch): PyTorch implementation of two-stream networks for video action recognition
 
 
